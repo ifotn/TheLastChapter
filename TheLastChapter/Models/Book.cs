@@ -15,6 +15,7 @@ namespace TheLastChapter.Models
         public string Author { get; set; }
 
         [Required]
+        [MaxLength(500)]
         public string Title { get; set; }
 
         public string Image { get; set; }
