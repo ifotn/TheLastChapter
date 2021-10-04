@@ -14,10 +14,13 @@ namespace TheLastChapter.Models
 
         public int Quantity { get; set; }
 
-        public int BookId { get; set; }
+        public int BookId { get; set; } // fk
 
         public DateTime DateAdded { get; set; }
 
         public string CustomerId { get; set; }
+
+        // parent ref
+        public Book Book { get; set; }
     }
 }

@@ -13,5 +13,8 @@ namespace TheLastChapter.Models
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Don't forget me!")]
         public string Name { get; set; }
+
+        // child ref
+        public List<Book> Books { get; set; }
     }
 }

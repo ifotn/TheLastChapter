@@ -21,7 +21,16 @@ namespace TheLastChapter.Models
 
         [Range(0.01, 999999)]
         public double Price { get; set; }
+
         public bool MatureContent { get; set; }
+
         public int CategoryId { get; set; }
+
+        // child refs
+        public List<CartItem> CartItems { get; set; }
+        public List<OrderDetail> OrderDetails { get; set; }
+
+        // parent ref
+        public Category Category { get; set; }
     }
 }

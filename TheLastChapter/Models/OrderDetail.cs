@@ -10,15 +10,18 @@ namespace TheLastChapter.Models
         //PK	
         public int OrderDetailId { get; set; }
 
-        //FK	
+        //FKs	
         public int OrderId { get; set; }
 
         public int BookId { get; set; }
 
-        //FK
+
         public double Price { get; set; }
 
         public int Quantity { get; set; }
 
+        // parent refs
+        public Book Book { get; set; }
+        public Order Order { get; set; }
     }
 }

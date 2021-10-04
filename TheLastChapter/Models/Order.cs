@@ -38,5 +38,8 @@ namespace TheLastChapter.Models
         public string Phone { get; set; }  // 1-800-Buy-Crap
 
         public string PaymentCode { get; set; }
+
+        // child ref
+        public List<OrderDetail> OrderDetails { get; set; }
     }
 }
