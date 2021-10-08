@@ -1,34 +1,33 @@
 ﻿@model IEnumerable<TheLastChapter.Models.Book>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Books";
 }
 
-<h1>Index</h1>
+<h1>Books</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<table class="table sortable table-striped table-hover">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Author)
+                <a href="#">Author</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                <a href="#">Title</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Image)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Price)
+                <a href="#">Price</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.MatureContent)
+                <a href="#">Mature Content</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Category)
+                <a href="#">Category</a>
             </th>
             <th></th>
         </tr>
@@ -43,7 +42,14 @@
                 @Html.DisplayFor(modelItem => item.Title)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Image)
+                @if (item.Image != null)
+                {
+                    <img src="~/img/books/@item.Image" alt="Book Cover" class="thumb" />
+                } 
+                else
+                {
+                    <img src="~/img/books/placeholder.gif" alt="Book Cover" class="thumb" />
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)

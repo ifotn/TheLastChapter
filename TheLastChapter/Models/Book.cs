@@ -21,10 +21,13 @@ namespace TheLastChapter.Models
         public string Image { get; set; }
 
         [Range(0.01, 999999)]
+        [DisplayFormat(DataFormatString = "{0:c}")]  // c = MS currency format
         public double Price { get; set; }
 
+        [Display(Name = "Mature Content")]
         public bool MatureContent { get; set; }
 
+        [Display(Name = "Category")]
         public int CategoryId { get; set; }
 
         // child refs

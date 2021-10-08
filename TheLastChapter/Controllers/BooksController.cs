@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +24,7 @@ namespace TheLastChapter.Controllers
         // GET: Books
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Books.Include(b => b.Category);
+            var applicationDbContext = _context.Books.Include(b => b.Category).OrderBy(b => b.Author).ThenBy(b => b.Title);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -48,7 +50,7 @@ namespace TheLastChapter.Controllers
         // GET: Books/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "Name");
+            ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "CategoryId", "Name");
             return View();
         }
 
@@ -57,16 +59,45 @@ namespace TheLastChapter.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BookId,Author,Title,Image,Price,MatureContent,CategoryId")] Book book)
+        public async Task<IActionResult> Create([Bind("BookId,Author,Title,Price,MatureContent,CategoryId")] Book book, IFormFile Image)
         {
             if (ModelState.IsValid)
             {
+                // upload Image if there is one
+                if (Image != null)
+                {
+                    var fileName = UploadImage(Image);
+                    book.Image = fileName;
+                }
+
                 _context.Add(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "Name", book.CategoryId);
             return View(book);
+        }
+
+        private static string UploadImage(IFormFile Image)
+        {
+            // get temp location of uploaded file
+            var filePath = Path.GetTempFileName();
+
+            // use Globally Unique Identifier (GUID) class to create unique name
+            // eg. book.jpg => 98sd23lk4u98-book.jpg
+            var fileName = Guid.NewGuid() + "-" + Image.FileName;
+
+            // set destination path dynamically so it runs on any system
+            var uploadPath = System.IO.Directory.GetCurrentDirectory() + "\\wwwroot\\img\\books\\" + fileName;
+
+            // execute the file transfer
+            using (var stream = new FileStream(uploadPath, FileMode.Create))
+            {
+                Image.CopyTo(stream);
+            }
+
+            // return new file name so it can be saved to the book object
+            return fileName;
         }
 
         // GET: Books/Edit/5
@@ -82,7 +113,7 @@ namespace TheLastChapter.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "Name", book.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "CategoryId", "Name", book.CategoryId);
             return View(book);
         }
 
@@ -91,7 +122,7 @@ namespace TheLastChapter.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BookId,Author,Title,Image,Price,MatureContent,CategoryId")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("BookId,Author,Title,Price,MatureContent,CategoryId")] Book book, IFormFile Image)
         {
             if (id != book.BookId)
             {
@@ -102,6 +133,13 @@ namespace TheLastChapter.Controllers
             {
                 try
                 {
+                    // upload Image if any
+                    if (Image != null)
+                    {
+                        var fileName = UploadImage(Image);
+                        book.Image = fileName;
+                    }
+
                     _context.Update(book);
                     await _context.SaveChangesAsync();
                 }
