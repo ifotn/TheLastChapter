@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,6 +13,8 @@ using TheLastChapter.Models;
 
 namespace TheLastChapter.Controllers
 {
+    // admin access only
+    [Authorize(Roles = "Administrator")]
     public class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;

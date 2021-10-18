@@ -11,8 +11,8 @@ using TheLastChapter.Models;
 
 namespace TheLastChapter.Controllers
 {
-    // make all methods private
-    [Authorize]
+    // make all methods accessible to Adminstrator role only.  role names case-sensitive; must match records in DB
+    [Authorize(Roles = "Administrator")]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
