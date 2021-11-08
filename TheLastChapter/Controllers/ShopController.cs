@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TheLastChapter.Data;
+using TheLastChapter.Models;
 
 namespace TheLastChapter.Controllers
 {
@@ -41,5 +43,49 @@ namespace TheLastChapter.Controllers
 
             return View(books);
         }
+
+        // POST: /Shop/AddToCart
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public IActionResult AddToCart(int BookId, int Quantity)
+        {
+            // get book price
+            var book = _context.Books.Find(BookId);
+            var price = book.Price;
+
+            // identify user
+            var customerId = "Random-Customer";
+
+            // create new CartItem
+            var cartItem = new CartItem
+            {
+                BookId = BookId,
+                Quantity = Quantity,
+                Price = price,
+                CustomerId = customerId,
+                DateAdded = DateTime.Now
+            };
+
+            // save to db
+            _context.CartItems.Add(cartItem);
+            _context.SaveChanges();
+
+            return RedirectToAction("Cart");
+        }
+
+        // GET: /Shop/Cart
+        public IActionResult Cart()
+        {
+            // get current cart items and parent Book objects
+            var cartItems = _context.CartItems.Include(c => c.Book).OrderBy(c => c.Book.Title).ToList();
+            return View(cartItems);
+        }
+
+        // identify customer for each shopping cart
+        //private string GetCustomerId()
+        //{
+        //    // is CustomerId session var already set?
+        //    if (HttpContext.Session.S)
+        //}
     }
 }

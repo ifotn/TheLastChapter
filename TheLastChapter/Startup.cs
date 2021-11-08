@@ -48,6 +48,9 @@ namespace TheLastChapter
                     options.ClientId = googleAuth["ClientId"];
                     options.ClientSecret = googleAuth["ClientSecret"];
                 });
+
+            // enable Session support (mostly for Cart usage)
+            services.AddSession();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +82,9 @@ namespace TheLastChapter
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+
+            // enable Session Support
+            app.UseSession();
         }
     }
 }
