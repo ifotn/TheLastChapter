@@ -85,3 +85,7 @@ body {
 .table-striped tbody tr:nth-of-type(2n+1) {
     background-color: #D7CCC8;
 }
+
+.input-small {
+    width: 75px;
+}

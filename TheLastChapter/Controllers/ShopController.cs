@@ -24,5 +24,22 @@ namespace TheLastChapter.Controllers
             var categories = _context.Categories.OrderBy(c => c.Name).ToList();
             return View(categories);
         }
+
+        // GET: /Shop/ShopByCategory/5
+        public IActionResult ShopByCategory(int id)
+        {
+            // query the Books filtered by the selected CategoryId param
+            var books = _context.Books.Where(b => b.CategoryId == id).OrderBy(b => b.Title).ToList();
+
+            // get selected Category Name to display
+            var category = _context.Categories.Find(id);
+            if (category == null)
+            {
+                return RedirectToAction("Index");
+            }
+            ViewBag.Category = category.Name;
+
+            return View(books);
+        }
     }
 }
