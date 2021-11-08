@@ -121,5 +121,14 @@ namespace TheLastChapter.Controllers
 
             return HttpContext.Session.GetString("CustomerId");
         }
+
+        // GET: /Shop/RemoveFromCart/5
+        public IActionResult RemoveFromCart(int id)
+        {
+            var cartItem = _context.CartItems.Find(id);
+            _context.CartItems.Remove(cartItem);
+            _context.SaveChanges();
+            return RedirectToAction("Cart");
+        }
     }
 }
