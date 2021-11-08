@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -54,20 +55,32 @@ namespace TheLastChapter.Controllers
             var price = book.Price;
 
             // identify user
-            var customerId = "Random-Customer";
+            var customerId = GetCustomerId();
 
-            // create new CartItem
-            var cartItem = new CartItem
+            // does user already have this book in their cart?
+            var cartItem = _context.CartItems.SingleOrDefault(c => c.BookId == BookId && c.CustomerId == customerId);
+            if (cartItem == null)
             {
-                BookId = BookId,
-                Quantity = Quantity,
-                Price = price,
-                CustomerId = customerId,
-                DateAdded = DateTime.Now
-            };
+                // create new CartItem
+                cartItem = new CartItem
+                {
+                    BookId = BookId,
+                    Quantity = Quantity,
+                    Price = price,
+                    CustomerId = customerId,
+                    DateAdded = DateTime.Now
+                };
 
-            // save to db
-            _context.CartItems.Add(cartItem);
+                // save to db
+                _context.CartItems.Add(cartItem);
+            }
+            else
+            {
+                // user already has this book in cart, so update the quantity
+                cartItem.Quantity += Quantity;
+                _context.Update(cartItem);
+            }
+                
             _context.SaveChanges();
 
             return RedirectToAction("Cart");
@@ -76,16 +89,37 @@ namespace TheLastChapter.Controllers
         // GET: /Shop/Cart
         public IActionResult Cart()
         {
-            // get current cart items and parent Book objects
-            var cartItems = _context.CartItems.Include(c => c.Book).OrderBy(c => c.Book.Title).ToList();
+            // get current customer to filter CartItems query
+            var customerId = GetCustomerId();
+
+            // get current cart items and parent Book objects for current customer
+            var cartItems = _context.CartItems.Where(c => c.CustomerId == customerId)
+                .Include(c => c.Book).OrderBy(c => c.Book.Title).ToList();
             return View(cartItems);
         }
 
-        // identify customer for each shopping cart
-        //private string GetCustomerId()
-        //{
-        //    // is CustomerId session var already set?
-        //    if (HttpContext.Session.S)
-        //}
+        //identify customer for each shopping cart
+        private string GetCustomerId()
+        {
+            // is CustomerId session var already set?
+            if (HttpContext.Session.GetString("CustomerId") == null) {
+                var customerId = "";
+                // if user is logged in, use their email as session var
+                if (User.Identity.IsAuthenticated)
+                {
+                    customerId = User.Identity.Name;
+                }
+                else
+                {
+                    // user is anonymous so generate randomId to attach to their session
+                    customerId = Guid.NewGuid().ToString();
+                }
+
+                // store customerId in session var
+                HttpContext.Session.SetString("CustomerId", customerId);
+            }
+
+            return HttpContext.Session.GetString("CustomerId");
+        }
     }
 }

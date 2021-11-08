@@ -56,6 +56,9 @@ namespace TheLastChapter
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // enable Session Support
+            app.UseSession();
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -81,10 +84,7 @@ namespace TheLastChapter
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
-            });
-
-            // enable Session Support
-            app.UseSession();
+            });        
         }
     }
 }
