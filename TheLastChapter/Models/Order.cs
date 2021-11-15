@@ -14,9 +14,11 @@ namespace TheLastChapter.Models
         public DateTime PurchaseDate { get; set; }
 
         [Required]
+        [Display(Name = "First Name")]
         public string FirstName { get; set; }
 
         [Required]
+        [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
         [Required]
@@ -31,6 +33,7 @@ namespace TheLastChapter.Models
 
         [Required]
         [MaxLength(7)]
+        [Display(Name = "Postal Code")]
         public string PostalCode { get; set; }
 
         [Required]

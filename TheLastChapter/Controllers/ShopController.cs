@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -129,6 +130,36 @@ namespace TheLastChapter.Controllers
             _context.CartItems.Remove(cartItem);
             _context.SaveChanges();
             return RedirectToAction("Cart");
+        }
+
+        // GET: /Shop/Checkout
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            return View();
+        }
+
+        // POST: /Shop/Checkout
+        [HttpPost]
+        [Authorize]
+        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode,Phone")] Order order)
+        {
+            // fill the CustomerId and OrderDate properties
+            order.CustomerId = User.Identity.Name;
+            order.PurchaseDate = DateTime.Now;
+
+            // save order to session var so we can retrieve it and save to db after successful payment
+            // use SessionExtensions 3rd party library since native .NET Core session can't store a complex object
+            HttpContext.Session.SetObject("Order", order);
+
+            return RedirectToAction("Payment");
+        }
+
+        // GET: /Shop/Payment
+        [Authorize]
+        public IActionResult Payment()
+        {
+            return View();
         }
     }
 }
