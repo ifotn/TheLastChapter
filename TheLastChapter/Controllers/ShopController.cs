@@ -149,7 +149,7 @@ namespace TheLastChapter.Controllers
         // POST: /Shop/Checkout
         [HttpPost]
         [Authorize]
-        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode,Phone")] Order order)
+        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode,Phone")] Models.Order order)
         {
             // fill the CustomerId and OrderDate properties
             order.CustomerId = User.Identity.Name;
