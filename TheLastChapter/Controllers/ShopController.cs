@@ -220,5 +220,45 @@ namespace TheLastChapter.Controllers
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
         }
+
+        // GET: /Shop/SaveOrder - after successful Stripe payment
+        [Authorize]
+        public IActionResult SaveOrder()
+        {
+            // read order from sesson var
+            var order = HttpContext.Session.GetObject<Models.Order>("Order");
+
+            // save new order to db
+            _context.Orders.Add(order);
+            _context.SaveChanges();  // pk populates automatically so we can use as fk in child records below
+
+            // save each Cart Item as a new Order Detail record
+            var cartItems = _context.CartItems.Where(c => c.CustomerId == HttpContext.Session.GetString("CustomerId"));
+
+            foreach (var item in cartItems)
+            {
+                var orderDetail = new OrderDetail
+                {
+                    BookId = item.BookId,
+                    Quantity = item.Quantity,
+                    Price = item.Price,
+                    OrderId = order.OrderId
+                };
+                _context.OrderDetails.Add(orderDetail);
+            }
+            _context.SaveChanges();
+
+            // empty cart & clear session vars
+            foreach (var item in cartItems)
+            {
+                _context.CartItems.Remove(item);
+            }
+            _context.SaveChanges();
+
+            HttpContext.Session.SetObject("Order", null);
+
+            // show receipt / confirmation
+            return RedirectToAction("Details", "Orders", new { @id = order.OrderId });
+        }
     }
 }
