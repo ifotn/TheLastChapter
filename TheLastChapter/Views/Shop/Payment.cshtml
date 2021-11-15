@@ -1,3 +1,30 @@
 ﻿@{ ViewData["Title"] = "Payment";
 }
+<script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+<script src="https://js.stripe.com/v3/"></script>
+
 <h1>Payment</h1>
+<button id="checkout-button" class="btn btn-primary">Pay Now</button>
+<script type="text/javascript">
+    var stripe = @ViewBag.PublishableKey;
+    var btn = document.getElementById('checkout-button');
+
+    // invoke Stripe process on button click
+    btn.addEventListener('click', function() {
+        // create new stripe checkout session
+        fetch('/Shop/ProcessPayment', {
+            method: 'POST'
+        }).then(function (response) {
+            return response.json()
+        }).then(function (session) {
+            return stripe.redirectToCheckout({ sessionId: session.Id })
+        }).then(function (result) {
+            if (result.error) {
+                alert(result.error.message)
+            }
+        }).catch(function (error) {
+            console.error('Error:', error)
+        })
+    })
+
+</script>

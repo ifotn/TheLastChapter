@@ -51,6 +51,9 @@ namespace TheLastChapter
 
             // enable Session support (mostly for Cart usage)
             services.AddSession();
+
+            // use Singleton class to read a config value and pass it to a controller (for Stripe API)
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Stripe;
+using Stripe.Checkout;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +19,14 @@ namespace TheLastChapter.Controllers
         // class level DbContext connection object
         private readonly ApplicationDbContext _context;
 
-        // constructor that accepts a DbContext instance
-        public ShopController (ApplicationDbContext context)
+        // config var to read appsettings for Stripe keys
+        private IConfiguration _iconfiguration;
+
+        // constructor that accepts a DbContext instance & now a configuration dependency too
+        public ShopController (ApplicationDbContext context, IConfiguration iconfiguration)
         {
             _context = context;
+            _iconfiguration = iconfiguration;
         }
 
         public IActionResult Index()
@@ -159,7 +166,59 @@ namespace TheLastChapter.Controllers
         [Authorize]
         public IActionResult Payment()
         {
+            // read Stripe public key from iconfiguration class var
+            ViewBag.PublishableKey = _iconfiguration["Stripe:PublishableKey"];
             return View();
+        }
+
+        // POST: /Shop/ProcessPayment
+        [Authorize]
+        [HttpPost]
+        public IActionResult ProcessPayment()
+        {
+            // get the order from the session var
+            var order = HttpContext.Session.GetObject<Models.Order>("Order");
+            var customerId = order.CustomerId;
+            var total = (from c in _context.CartItems
+                         where c.CustomerId == customerId
+                         select (c.Price * c.Quantity)).Sum();
+
+            // get Stripe Secret Key from appsettings
+            StripeConfiguration.ApiKey = _iconfiguration.GetSection("Stripe")["SecretKey"];
+
+            // create Stripe payment object
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string>
+                {
+                    "card"
+                },
+                LineItems = new List<SessionLineItemOptions> { 
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = ((long?)(total * 100)),
+                            Currency = "cad",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = "The Last Chapter Purchase"
+                            }
+                        }, 
+                        Quantity = 1
+                    }
+                },
+                Mode = "payment",
+                SuccessUrl = "https://" + Request.Host + "/Shop/SaveOrder",
+                CancelUrl = "https://" + Request.Host + "/Shop/Cart"
+            };
+
+            // invoke Stripe now with the above payment object
+            var service = new SessionService();
+            Session session = service.Create(options);
+
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
         }
     }
 }
