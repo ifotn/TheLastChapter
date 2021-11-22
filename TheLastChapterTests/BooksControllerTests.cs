@@ -70,6 +70,8 @@ namespace TheLastChapterTests
             controller = new BooksController(_context);
         }
 
+        #region Index
+
         [TestMethod]
         public void IndexLoadsCorrectView()
         {
@@ -92,5 +94,53 @@ namespace TheLastChapterTests
             // assert
             CollectionAssert.AreEqual(books.OrderBy(b => b.Author).ThenBy(b => b.Title).ToList(), model);
         }
+
+        #endregion
+
+        #region Details
+
+        [TestMethod]
+        public void DetailsNoIdLoads404()
+        {
+            // act
+            var result = (ViewResult)controller.Details(null).Result;
+
+            // assert
+            Assert.AreEqual("404", result.ViewName);
+        }
+
+        [TestMethod]
+        public void DetailsInvalidIdLoads404()
+        {
+            // act
+            var result = (ViewResult)controller.Details(-1).Result;
+
+            // assert
+            Assert.AreEqual("404", result.ViewName);
+        }
+
+        [TestMethod]
+        public void DetailsValidIdLoadsBook()
+        {
+            // act
+            var result = (ViewResult)controller.Details(642).Result;
+            Book book = (Book)result.Model;
+
+            // assert
+            Assert.AreEqual(books[0], book);
+        }
+
+        [TestMethod]
+        public void DetailsValidIdLoadsView()
+        {
+            // act
+            var result = (ViewResult)controller.Details(642).Result;
+
+            // assert
+            Assert.AreEqual("Details", result.ViewName);
+        }
     } 
+        #endregion
+
+
 }

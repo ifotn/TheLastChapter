@@ -38,7 +38,7 @@ namespace TheLastChapter.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return View("404");
             }
 
             var book = await _context.Books
@@ -46,10 +46,10 @@ namespace TheLastChapter.Controllers
                 .FirstOrDefaultAsync(m => m.BookId == id);
             if (book == null)
             {
-                return NotFound();
+                return View("404");
             }
 
-            return View(book);
+            return View("Details", book);
         }
 
         // GET: Books/Create
