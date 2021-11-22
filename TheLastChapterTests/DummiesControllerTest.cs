@@ -32,5 +32,18 @@ namespace TheLastChapterTests
             // assert - did the correct view get returned?
             Assert.AreEqual("Index", result.ViewName);
         }
+
+        [TestMethod]
+        public void IndexShowsViewDataMessage()
+        {
+            // arrange - set up any objects / vars / params needed
+            var controller = new DummiesController();
+
+            // act - execute the method we want to test. We have to cast the IActionResult return type to a ViewResult
+            var result = (ViewResult)controller.Index();
+
+            // assert - is ViewData var as expected
+            Assert.AreEqual("Message from the controller", result.ViewData["Message"]);
+        }
     }
 }

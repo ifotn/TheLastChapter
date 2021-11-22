@@ -25,10 +25,11 @@ namespace TheLastChapter.Controllers
         }
 
         // GET: Books
+        // public IActionResult Index()
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Books.Include(b => b.Category).OrderBy(b => b.Author).ThenBy(b => b.Title);
-            return View(await applicationDbContext.ToListAsync());
+            return View("Index", await applicationDbContext.ToListAsync());
         }
 
         // GET: Books/Details/5

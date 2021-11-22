@@ -10,6 +10,7 @@ namespace TheLastChapter.Controllers
     {
         public IActionResult Index()
         {
+            ViewData["Message"] = "Message from the controller";
             return View("Index");
         }
     }
