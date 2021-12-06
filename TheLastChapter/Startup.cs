@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TheLastChapter.Data;
 
 namespace TheLastChapter
@@ -54,6 +48,9 @@ namespace TheLastChapter
 
             // use Singleton class to read a config value and pass it to a controller (for Stripe API)
             services.AddSingleton<IConfiguration>(Configuration);
+
+            // Swagger / Swashbuckle for API documentation
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,7 +84,16 @@ namespace TheLastChapter
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
-            });        
+            });
+
+            // when app starts, use Swagger to generate api docs based on current version
+            app.UseSwagger();
+
+            // enable swagger-ui to build HTML doc file for our api
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "The Last Chapter Web API");
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -20,7 +21,7 @@ namespace TheLastChapterTests
         private BooksController controller;
         List<Book> books = new List<Book>();
 
-         // this runs automatically before each test in this class
+        // this runs automatically before each test in this class
         [TestInitialize]
         public void TestInitialize()
         {
@@ -33,12 +34,17 @@ namespace TheLastChapterTests
             // create mock data for testing
             var Category = new Category
             {
-                CategoryId = 1000, Name = "My Test Category"
+                CategoryId = 1000,
+                Name = "My Test Category"
             };
 
             books.Add(new Book
             {
-                BookId = 642, Title = "A Book", Author = "Some Person", Price = 9.99, CategoryId = 1000,
+                BookId = 642,
+                Title = "A Book",
+                Author = "Some Person",
+                Price = 9.99,
+                CategoryId = 1000,
                 Category = Category
             });
             books.Add(new Book
@@ -139,8 +145,131 @@ namespace TheLastChapterTests
             // assert
             Assert.AreEqual("Details", result.ViewName);
         }
-    } 
         #endregion
 
+        #region Delete
 
+        [TestMethod]
+        public void DeleteNullId()
+        {
+            var result = controller.Delete(null);
+            var viewResult = (ViewResult)result.Result;
+            Assert.AreEqual("Error", viewResult.ViewName);
+        }
+
+        [TestMethod]
+        public void DeleteIdNotExists()
+        {
+            var result = controller.Delete(99);
+            var viewResult = (ViewResult)result.Result;
+            Assert.AreEqual("Error", viewResult.ViewName);
+        }
+
+        [TestMethod]
+        public void DeleteCorrectView()
+        {
+            var id = 642;
+            var result = controller.Delete(id);
+            var viewResult = (ViewResult)result.Result;
+            Assert.AreEqual("Delete", viewResult.ViewName);
+        }
+
+        [TestMethod]
+        public void DeleteCorrectProduct()
+        {
+            var id = 642;
+            var result = controller.Delete(id);
+            var viewResult = (ViewResult)result.Result;
+            Book book = (Book)viewResult.Model;
+            Assert.AreEqual(books[0], book);
+        }
+
+        [TestMethod]
+        public void DeleteConfirmedSuccess()
+        {
+            var id = 10;
+            var result = controller.DeleteConfirmed(id);
+            var book = _context.Books.Find(id);
+            Assert.AreEqual(book, null);
+        }
+
+        [TestMethod]
+        public void DeleteConfirmedRedirectIndex()
+        {
+            var id = 642;
+            var result = controller.DeleteConfirmed(id);
+            var actionResult = (RedirectToActionResult)result.Result;
+            Assert.AreEqual("Index", actionResult.ActionName);
+        }
+        #endregion
+
+        #region Edit
+
+        // Test 404 page loads if bookId does not match book
+        [TestMethod]
+        public void EditBookIDNotFound()
+        {
+            // act
+            var result = (ViewResult)controller.Edit(7345, books[0], null).Result;
+
+
+            // assert
+            Assert.AreEqual("404", result.ViewName);
+
+        }
+
+        // Test 404 loads if bookId is invalid
+        [TestMethod]
+        public void EditInvalidBookIDFound()
+        {
+            // act
+            var result = (ViewResult)controller.Edit(-1, books[3], null).Result;
+
+
+            // assert
+            Assert.AreEqual("404", result.ViewName);
+
+        }
+
+
+        // Test when an invalid model is saved/passed in it will return the the user to the edit page
+        [TestMethod]
+        public void EditInValidModelEditViewLoads()
+        {
+            // act 
+            controller.ModelState.AddModelError("Mock Category", "1002");
+
+            var result = (ViewResult)controller.Edit(642, books[0], null).Result;
+
+            // assert
+            Assert.AreEqual("Edit", result.ViewName);
+        }
+
+
+        // Test when a valid model is passed in that it will return user to the index page
+        [TestMethod]
+        public void EditValidModelLoadsIndex()
+        {
+            // act
+            var result = (RedirectToActionResult)controller.Edit(642, books[0], null).Result;
+
+            // assert
+            Assert.AreEqual("Index", result.ActionName);
+        }
+
+
+        // Test for the view data
+        [TestMethod]
+        public void ValidCategoryID()
+        {
+            controller.ModelState.AddModelError("Mock Category", "1000");
+
+            var result = (ViewResult)controller.Edit(642, books[0], null).Result;
+            var selectList = (SelectList)result.ViewData["CategoryId"];
+            var items = selectList.Items;
+            Assert.AreEqual(items,_context.Categories.ToList());
+        }
+
+        #endregion
+    }
 }

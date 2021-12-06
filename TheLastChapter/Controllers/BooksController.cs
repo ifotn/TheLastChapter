@@ -119,7 +119,7 @@ namespace TheLastChapter.Controllers
                 return NotFound();
             }
             ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "CategoryId", "Name", book.CategoryId);
-            return View(book);
+            return View("Edit", book);
         }
 
         // POST: Books/Edit/5
@@ -162,7 +162,7 @@ namespace TheLastChapter.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "Name", book.CategoryId);
-            return View(book);
+            return View("Edit", book);
         }
 
         // GET: Books/Delete/5
@@ -170,21 +170,20 @@ namespace TheLastChapter.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return View("Error");
             }
-
-            var book = await _context.Books
-                .Include(b => b.Category)
+            var product = await _context.Books
+                .Include(p => p.Category)
                 .FirstOrDefaultAsync(m => m.BookId == id);
-            if (book == null)
-            {
-                return NotFound();
-            }
 
-            return View(book);
+            if (product == null)
+            {
+                return View("Error");
+            }
+            return View("Delete", product);
         }
 
-        // POST: Books/Delete/5
+        //DeleteConfirmed(POST) :
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
